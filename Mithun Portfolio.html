@@ -1,0 +1,452 @@
+<html><head><base href="/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mithun M - Interactive 3D Portfolio</title>
+
+<!-- Include Three.js and dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/ScrollTrigger.min.js"></script>
+
+<style>
+:root {
+    --primary-color: #000000;
+    --secondary-color: #ffffff;
+    --accent-color: #333333;
+    --glow-color: rgba(255, 255, 255, 0.8);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    overflow-x: hidden;
+}
+
+#canvas-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+}
+
+.content-wrapper {
+    position: relative;
+    z-index: 2;
+}
+
+.section {
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Navigation */
+.nav-container {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+}
+
+.nav-list {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-item {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    transition: var(--transition);
+}
+
+.nav-item:hover {
+    background: var(--glow-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 15px var(--glow-color);
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding-top: 20vh;
+}
+
+.hero h1 {
+    font-size: 5rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeInUp 1s ease forwards;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 0.5s;
+}
+
+.contact-links {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 1s;
+}
+
+.contact-links a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--secondary-color);
+    border-radius: 25px;
+    transition: var(--transition);
+}
+
+.contact-links a:hover {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 15px var(--glow-color);
+}
+
+/* Content Sections */
+.section-title {
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.section-title.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: var(--transition);
+}
+
+/* Education Timeline */
+.timeline {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--secondary-color);
+    transform: translateX(-50%);
+}
+
+.timeline-item {
+    margin: 2rem 0;
+    position: relative;
+    width: 50%;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: var(--transition);
+}
+
+.timeline-item:nth-child(even) {
+    margin-left: 50%;
+    transform: translateX(50px);
+}
+
+.timeline-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Projects Grid */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.project-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.project-card.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.project-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+/* Achievements */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.achievement-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+}
+
+.achievement-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+    
+    .nav-container {
+        width: 90%;
+    }
+    
+    .nav-list {
+        gap: 1rem;
+    }
+}
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div class="content-wrapper">
+    <nav class="nav-container">
+        <ul class="nav-list">
+            <li class="nav-item" data-section="home">Home</li>
+            <li class="nav-item" data-section="education">Education</li>
+            <li class="nav-item" data-section="projects">Projects</li>
+            <li class="nav-item" data-section="achievements">Achievements</li>
+        </ul>
+    </nav>
+
+    <section class="section hero" id="home">
+        <h1>MITHUN M</h1>
+        <p>AI & DS ENGINEER</p>
+        <div class="contact-links">
+            <a href="tel:+919361123237">+91 93611 23237</a>
+            <a href="mailto:mithun.m2023ai-ds@sece.ac.in">Email</a>
+            <a href="https://github.com/yourusername" target="_blank">GitHub</a>
+            <a href="https://linkedin.com/in/yourusername" target="_blank">LinkedIn</a>
+        </div>
+    </section>
+
+    <section class="section" id="education">
+        <h2 class="section-title">Education Journey</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <h3>B. Tech (AI & DS)</h3>
+                <p>Sri Eshwar College of Engineering</p>
+                <p>CGPA: 7.9 (2023–2027)</p>
+            </div>
+            <div class="timeline-item">
+                <h3>HSC</h3>
+                <p>Sri Vijay Vidhyalaya Matric Higher Secondary School</p>
+                <p>80.08% (2021–2023)</p>
+            </div>
+            <div class="timeline-item">
+                <h3>SSLC</h3>
+                <p>Sri Vijay Vidhyalaya Matric Higher Secondary School</p>
+                <p>82.06% (2020–2021)</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="projects">
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3>Face Detection & Capture</h3>
+                <p>Advanced surveillance system with face detection and motion recognition</p>
+                <p>Tech Stack: Python, OpenCV, GitHub</p>
+            </div>
+            <div class="project-card">
+                <h3>Virtual Voice Assistant</h3>
+                <p>Voice-controlled assistant using Python</p>
+                <p>Tech Stack: Python, speech recognition, text-to-speech</p>
+            </div>
+            <div class="project-card">
+                <h3>Data Analysis</h3>
+                <p>Statistical analysis and visualization of Wild Blueberry Yield</p>
+                <p>Tech Stack: Python, pandas, data visualization</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="achievements">
+        <h2 class="section-title">Programming Achievements</h2>
+        <div class="achievements-grid">
+            <div class="achievement-card">
+                <h3>LeetCode</h3>
+                <p>Rank #13,14,917</p>
+                <p>Problems Solved: 427</p>
+                <p>Contest Rating: 1,737</p>
+            </div>
+            <div class="achievement-card">
+                <h3>HackerEarth</h3>
+                <p>Badges: 3</p>
+            </div>
+            <div class="achievement-card">
+                <h3>HackerRank</h3>
+                <p>Python: 5 badges</p>
+                <p>C: 5 badges</p>
+                <p>C++: 5 badges</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Three.js Scene Setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// Ambient Light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+// Point Light
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
+pointLight.position.set(5, 5, 5);
+scene.add(pointLight);
+
+// Create Particles
+const particlesGeometry = new THREE.BufferGeometry();
+const particlesCount = 5000;
+const posArray = new Float32Array(particlesCount * 3);
+
+for(let i = 0; i < particlesCount * 3; i++) {
+    posArray[i] = (Math.random() - 0.5) * 50;
+}
+
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+const particlesMaterial = new THREE.PointsMaterial({
+    size: 0.005,
+    color: 0xffffff
+});
+
+const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+scene.add(particlesMesh);
+
+camera.position.z = 30;
+
+// Animation
+function animate() {
+    requestAnimationFrame(animate);
+    particlesMesh.rotation.x += 0.0001;
+    particlesMesh.rotation.y += 0.0001;
+    renderer.render(scene, camera);
+}
+animate();
+
+// Resize Handler
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Scroll Animations
+const sections = document.querySelectorAll('.section-title, .timeline-item, .project-card');
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+
+sections.forEach(section => {
+    observer.observe(section);
+});
+
+// Smooth Scrolling
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const section = document.getElementById(item.dataset.section);
+        section.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+
+// Mouse move parallax effect
+document.addEventListener('mousemove', (event) => {
+    const x = (event.clientX / window.innerWidth) - 0.5;
+    const y = (event.clientY / window.innerHeight) - 0.5;
+    
+    particlesMesh.rotation.y = x * 0.5;
+    particlesMesh.rotation.x = y * 0.5;
+});
+</script>
+
+</body></html>
